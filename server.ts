@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import path from 'path';
+import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { db } from './server/db.js';
@@ -429,6 +430,20 @@ app.get('/api/health', (req: Request, res: Response) => {
 // ----------------------------------------------------
 // DEV SERVER & STATIC FILE SERVING
 // ----------------------------------------------------
+function resolveDistPath(): string {
+  const candidates = [
+    path.resolve(__dirname, 'dist'),
+    path.resolve(__dirname, 'src', 'dist'),
+    path.resolve(__dirname, '..', 'dist'),
+    path.resolve(__dirname, '..', 'src', 'dist'),
+    path.resolve(process.cwd(), 'dist'),
+    path.resolve(process.cwd(), 'src', 'dist'),
+  ];
+
+  const found = candidates.find((candidate) => existsSync(candidate) && existsSync(path.join(candidate, 'index.html')));
+  return found || candidates[0];
+}
+
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
@@ -438,7 +453,12 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.resolve(__dirname, 'dist');
+    const distPath = resolveDistPath();
+
+    if (!existsSync(path.join(distPath, 'index.html'))) {
+      console.warn(`⚠️ Built frontend not found in expected dist locations. Checked: ${resolveDistPath()}`);
+    }
+
     app.use(express.static(distPath));
     app.get('*', (req: Request, res: Response) => {
       res.sendFile(path.resolve(distPath, 'index.html'));
