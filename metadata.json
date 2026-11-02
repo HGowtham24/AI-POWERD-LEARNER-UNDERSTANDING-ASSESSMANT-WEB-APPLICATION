@@ -1,0 +1,6 @@
+{
+  "name": "LearnSense – AI-Powered Learner Understanding Assessment",
+  "description": "Speak your knowledge. Understand your progress. An intelligent voice-based assessment platform that evaluates conceptual understanding through spoken answers and AI speech analysis.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
